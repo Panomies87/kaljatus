@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beer Pouring Game</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        canvas {
+            border: 2px solid #333;
+            background: #fff;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="400" height="600"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let glass = {
+            x: canvas.width / 2 - 30,
+            y: canvas.height - 60,
+            width: 60,
+            height: 40,
+            speed: 5,
+            beerLevel: 0,
+            maxBeerLevel: 100
+        };
+
+        let beer = {
+            x: Math.random() * (canvas.width - 20) + 10,
+            y: 0,
+            width: 10,
+            height: 20,
+            speed: 3,
+        };
+
+        let score = 0;
+        let isGameOver = false;
+
+        function drawGlass() {
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(glass.x, glass.y, glass.width, glass.height);
+            
+            // Draw beer level
+            ctx.fillStyle = '#FFD700';
+            const beerHeight = (glass.beerLevel / glass.maxBeerLevel) * glass.height;
+            ctx.fillRect(glass.x, glass.y + glass.height - beerHeight, glass.width, beerHeight);
+        }
+
+        function drawBeer() {
+            ctx.fillStyle = '#FFD700';
+            ctx.fillRect(beer.x, beer.y, beer.width, beer.height);
+        }
+
+        function drawScore() {
+            ctx.fillStyle = '#333';
+            ctx.font = '20px Arial';
+            ctx.fillText(`Score: ${score}`, 10, 30);
+        }
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function updateBeer() {
+            beer.y += beer.speed;
+
+            // Check if beer hits the glass
+            if (
+                beer.y + beer.height >= glass.y &&
+                beer.x + beer.width >= glass.x &&
+                beer.x <= glass.x + glass.width
+            ) {
+                glass.beerLevel += 10;
+                score++;
+                beer.y = 0;
+                beer.x = Math.random() * (canvas.width - beer.width);
+
+                if (glass.beerLevel >= glass.maxBeerLevel) {
+                    isGameOver = true;
+                }
+            }
+
+            // Check if beer goes off screen
+            if (beer.y > canvas.height) {
+                isGameOver = true;
+            }
+        }
+
+        function moveGlass() {
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowLeft' && glass.x > 0) {
+                    glass.x -= glass.speed;
+                } else if (
+                    e.key === 'ArrowRight' && glass.x < canvas.width - glass.width
+                ) {
+                    glass.x += glass.speed;
+                }
+            });
+        }
+
+        function gameOver() {
+            ctx.fillStyle = '#333';
+            ctx.font = '30px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2);
+            ctx.font = '20px Arial';
+            ctx.fillText(`Your Score: ${score}`, canvas.width / 2, canvas.height / 2 + 40);
+        }
+
+        function gameLoop() {
+            if (isGameOver) {
+                gameOver();
+                return;
+            }
+
+            clearCanvas();
+            drawGlass();
+            drawBeer();
+            drawScore();
+            updateBeer();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        moveGlass();
+        gameLoop();
+    </script>
+</body>
+</html>
